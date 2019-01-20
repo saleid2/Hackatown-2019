@@ -16,6 +16,8 @@
         android:name="io.flutter.app.FlutterApplication"
         android:label="polseinzer"
         android:icon="@mipmap/ic_launcher">
+        <meta-data android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyBSNLUYYbxq3A24F9p9QD5A7wI5bcVUlXE"/>
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
