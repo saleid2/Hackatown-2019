@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
@@ -9,6 +10,8 @@ import 'package:sqflite/sqflite.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = new DatabaseHelper.internal();
+
+  static final double earth_radius = 6378137;
 
   static final String _create_table_sql =
       "CREATE TABLE parking(id INTEGER PRIMARY KEY, poteauId INTEGER, x REAL, y REAL, desc TEXT, code TEXT, fleche INTEGER)";
@@ -47,7 +50,9 @@ class DatabaseHelper {
         List row = line.split(',');
 
         int id = int.parse(row[0]);
+        // Longitude
         double x = double.parse(row[1]);
+        // Latitude
         double y = double.parse(row[2]);
         int poteauId = int.parse(row[3]);
         String desc = row[4];
@@ -77,11 +82,20 @@ class DatabaseHelper {
     return res;
   }
 
+  /// Radius is in meters
   Future<List<Sign>> getZone(
       double latitude, double longitude, double radius) async {
     var dbClient = await db;
-    // TODO: Calculate X and Y radii
-    List<Map> list = await dbClient.rawQuery('SELECT * FROM parking');
+
+    double dLat = getLatitudeDelta(radius);
+    double dLon = getLongitudeDelta(radius, longitude);
+
+    List<Map> list = await dbClient.rawQuery(
+        'SELECT x,y FROM parking '
+        'WHERE (x BETWEEN ? AND ?) '
+        'AND (y BETWEEN ? and ?)',
+        [latitude - dLat, latitude + dLat, longitude - dLon, longitude + dLon]);
+
     List<Sign> signs = new List();
 
     for (Map item in list) {
@@ -89,5 +103,14 @@ class DatabaseHelper {
     }
 
     return signs;
+  }
+
+  /// Radius is in meters
+  double getLatitudeDelta(double radius) {
+    return (180 / pi) * (radius / earth_radius);
+  }
+
+  double getLongitudeDelta(double radius, double latitude) {
+    return getLatitudeDelta(radius) / cos(pi / (180 * latitude));
   }
 }
