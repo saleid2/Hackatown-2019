@@ -15,6 +15,7 @@ environment:
 dependencies:
   google_maps_flutter: ^0.0.3+3
   flutter_search_bar: ^2.0.7
+  flutter_calendar_carousel: any
   flutter:
     sdk: flutter
   sqflite: any

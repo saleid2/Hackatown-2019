@@ -56,16 +56,17 @@ class _MyHomePageState extends State<MyHomePage> {
     signs =
         await databaseHelper.getZone(center.longitude, center.latitude, 200);
     print("sign added");
-    print(signs.length);
     for (Sign sign in signs) {
       isIllegalParking = parkingDateManager.verifyDate(sign.desc);
       print("sign added1");
       print("is illegal: " + isIllegalParking.toString());
+      if(isIllegalParking)
       mapController.addMarker(MarkerOptions(
         draggable: false,
         position: LatLng(sign.y, sign.x),
-        infoWindowText: InfoWindowText("Info", sign.desc),
         icon: BitmapDescriptor.defaultMarkerWithHue(isIllegalParking ? BitmapDescriptor.hueRed : BitmapDescriptor.hueGreen),
+        infoWindowText: InfoWindowText("Info", sign.desc),
+
       ));
     }
   }
@@ -82,11 +83,47 @@ class _MyHomePageState extends State<MyHomePage> {
           padding: EdgeInsets.zero,
           children: <Widget>[
             DrawerHeader(
-              child: Text('Drawer Header'),
+              child: Text('Main menu'),
               decoration: BoxDecoration(
                 color: Colors.blue,
               ),
+            ),
+            Container(
+              // This align moves the children to the bottom
+                child: Align(
+                    alignment: FractionalOffset.bottomCenter,
+                    // This container holds all the children that will be aligned
+                    // on the bottom and should not scroll with the above ListView
+                    child: Container(
+                        child: Column(
+                          children: <Widget>[
+                            Divider(),
+                            ListTile(leading: Icon(Icons.calendar_today),
+                                title: Text('Calendar'),
+                                onTap: () {
+                                  print("testing button");
+                                }),
+                            ListTile(leading: Icon(Icons.insert_emoticon),
+                                title: Text('NSFW'),
+                                onTap: () {
+                                  print("testing button");
+                                }),
+                            ListTile(leading: Icon(Icons.settings),
+                                title: Text('Setting'),
+                                onTap: () {
+                                  print("testing button");
+                                }),
+                            ListTile(leading: Icon(Icons.help),
+                                title: Text('Help'),
+                                onTap: () {
+                                  print("testing button");
+                                }),
+                          ],
+                        )
+                    )
+                )
             )
+
           ],
         )),
         appBar: new AppBar(
