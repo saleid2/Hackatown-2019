@@ -91,7 +91,7 @@ class DatabaseHelper {
     double dLon = getLongitudeDelta(radius, longitude);
 
     List<Map> list = await dbClient.rawQuery(
-        'SELECT x,y FROM parking '
+        'SELECT * FROM parking '
         'WHERE (x BETWEEN ? AND ?) '
         'AND (y BETWEEN ? and ?)',
         [latitude - dLat, latitude + dLat, longitude - dLon, longitude + dLon]);
