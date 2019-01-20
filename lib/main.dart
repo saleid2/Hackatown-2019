@@ -31,13 +31,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   List<Sign> signs;
   LatLng _center = const LatLng(45.48881898, -73.58350448);
-  LatLng _center1 = const LatLng(49.48881898, -71.58350448);
 
-  final DataSearch _delegate = DataSearch();
+  final DataSearch _delegate = new DataSearch();
 
   String _lastStringSelected;
-
-  var isLoading = true;
 
   void getAllSigns() async {
     signs = await databaseHelper.getZone(-73.58350448, 45.48881898, 1000);
@@ -110,16 +107,19 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: Align(
                   alignment: Alignment.bottomRight,
                   child: FloatingActionButton(
+                    heroTag: "fab1",
                       onPressed: () {
-                        mapController.clearMarkers();
-                        mapController.addMarker(MarkerOptions(
-                          draggable: false,
-                          position: _center,
-                          // icon: BitmapDescriptor.fromAsset('images/circle.png',),
-                        ));
-                        mapController.animateCamera(
-                            CameraUpdate.newCameraPosition(
-                                CameraPosition(target: _center, zoom: 18.0)));
+                        if (mapController != null) {
+                          mapController.clearMarkers();
+                          mapController.addMarker(MarkerOptions(
+                            draggable: false,
+                            position: _center,
+                            // icon: BitmapDescriptor.fromAsset('images/circle.png',),
+                          ));
+                          mapController.animateCamera(
+                              CameraUpdate.newCameraPosition(
+                                  CameraPosition(target: _center, zoom: 18.0)));
+                        }
                       },
                       materialTapTargetSize: MaterialTapTargetSize.padded,
                       backgroundColor: Colors.blue,
@@ -130,12 +130,15 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: Align(
                   alignment: Alignment.bottomCenter,
                   child: FloatingActionButton(
+                      heroTag: "fab2",
                       onPressed: () {
-                        getAllSigns();
+                        if (mapController != null) {
+                          getAllSigns();
 
-                        mapController.animateCamera(
-                            CameraUpdate.newCameraPosition(
-                                CameraPosition(target: _center, zoom: 18.0)));
+                          mapController.animateCamera(
+                              CameraUpdate.newCameraPosition(
+                                  CameraPosition(target: _center, zoom: 18.0)));
+                        }
                       },
                       materialTapTargetSize: MaterialTapTargetSize.padded,
                       backgroundColor: Colors.blue,
