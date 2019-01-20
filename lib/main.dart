@@ -56,10 +56,29 @@ class _MyHomePageState extends State<MyHomePage> {
     signs =
         await databaseHelper.getZone(center.longitude, center.latitude, 200);
     print("sign added");
-    for (Sign sign in signs) {
+
+
+    List<Sign> _signs = new List<Sign>();
+
+    Sign previousSign;
+
+    // Preprocess signs and combine the ones that overlap perfectly
+    for (Sign sign in signs){
+      if (previousSign != null && previousSign.poteauId == sign.poteauId){
+        _signs.removeLast();
+        String newDesc = previousSign.desc + "\n" + sign.desc;
+
+        sign = new Sign(sign.id,sign.x,sign.y, sign.poteauId, newDesc, sign.code, 0);
+      }
+
+      previousSign = sign;
+
+      _signs.add(sign);
+    }
+
+    for (Sign sign in _signs) {
       isIllegalParking = parkingDateManager.verifyDate(sign.desc);
-      print("sign added1");
-      print("is illegal: " + isIllegalParking.toString());
+      print(sign.poteauId);
       mapController.addMarker(MarkerOptions(
         draggable: false,
         position: LatLng(sign.y, sign.x),
