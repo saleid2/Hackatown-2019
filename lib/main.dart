@@ -30,14 +30,26 @@ class _MyHomePageState extends State<MyHomePage> {
   DatabaseHelper databaseHelper = new DatabaseHelper();
 
   List<Sign> signs;
-  LatLng _center = const LatLng(45.48881898, -73.58350448);
+  final LatLng _center = const LatLng(45.4957515, -73.5811633);
 
   final DataSearch _delegate = new DataSearch();
 
   String _lastStringSelected;
 
-  void getAllSigns() async {
-    signs = await databaseHelper.getZone(-73.58350448, 45.48881898, 1000);
+  void getAllSigns(LatLng center) async {
+    if (mapController == null) return;
+
+    mapController.clearMarkers();
+    mapController.addMarker(MarkerOptions(
+      draggable: false,
+      position: center,
+      // icon: BitmapDescriptor.fromAsset('images/circle.png',),
+    ));
+    mapController.animateCamera(CameraUpdate.newCameraPosition(
+        CameraPosition(target: center, zoom: 18.0)));
+
+    signs =
+        await databaseHelper.getZone(center.longitude, center.latitude, 200);
     print("sign added");
     print(signs.length);
     for (Sign sign in signs) {
@@ -77,15 +89,16 @@ class _MyHomePageState extends State<MyHomePage> {
                   print("Search button pressed");
                   final String selected = await showSearch<String>(
                       context: context, delegate: _delegate);
-                  if (selected != null && selected != _lastStringSelected) {
+                  if (selected != null) {
                     setState(() {
                       _lastStringSelected =
                           selected.replaceAll(r'[^\d\.-,]+', '');
                       var latlng = _lastStringSelected.split(',');
-                      _center = new LatLng(
+                      LatLng dest = new LatLng(
                           double.parse(latlng[0].substring(1)),
                           double.parse(
                               latlng[1].substring(0, latlng[1].length - 1)));
+                      getAllSigns(dest);
                     });
                   }
                 }),
@@ -107,43 +120,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: Align(
                   alignment: Alignment.bottomRight,
                   child: FloatingActionButton(
-                    heroTag: "fab1",
+                      heroTag: "fab1",
                       onPressed: () {
-                        if (mapController != null) {
-                          mapController.clearMarkers();
-                          mapController.addMarker(MarkerOptions(
-                            draggable: false,
-                            position: _center,
-                            // icon: BitmapDescriptor.fromAsset('images/circle.png',),
-                          ));
-                          mapController.animateCamera(
-                              CameraUpdate.newCameraPosition(
-                                  CameraPosition(target: _center, zoom: 18.0)));
-                        }
+                        getAllSigns(_center);
                       },
                       materialTapTargetSize: MaterialTapTargetSize.padded,
                       backgroundColor: Colors.blue,
                       child: const Icon(Icons.my_location, size: 36.0)),
                 )),
-            Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: FloatingActionButton(
-                      heroTag: "fab2",
-                      onPressed: () {
-                        if (mapController != null) {
-                          getAllSigns();
-
-                          mapController.animateCamera(
-                              CameraUpdate.newCameraPosition(
-                                  CameraPosition(target: _center, zoom: 18.0)));
-                        }
-                      },
-                      materialTapTargetSize: MaterialTapTargetSize.padded,
-                      backgroundColor: Colors.blue,
-                      child: const Icon(Icons.send, size: 36.0)),
-                ))
           ],
         ));
   }
