@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:polseinzer/database/db_helper.dart';
+import 'package:polseinzer/database/model/sign.dart';
 
 void main() {
   runApp(new MyApp());
@@ -17,6 +19,7 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   GoogleMapController mapController;
+  GoogleMapOptions mapOptions;
 
   @override
   _MyHomePageState createState() => new _MyHomePageState();
@@ -24,13 +27,30 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   GoogleMapController mapController;
+  DatabaseHelper databaseHelper = new DatabaseHelper();
+
+  List<Sign> signs;
+  LatLng _center = const LatLng(45.48881898, -73.58350448);
+  LatLng _center1 = const LatLng(49.48881898, -71.58350448);
 
   final DataSearch _delegate = DataSearch();
 
   String _lastStringSelected;
 
   var isLoading = true;
-  LatLng _center = const LatLng(45.521563, -122.677433);
+
+  void getAllSigns() async {
+    signs = await databaseHelper.getZone(-73.58350448, 45.48881898, 1000);
+    print("sign added");
+    print(signs.length);
+    for (Sign sign in signs) {
+      print("sign added1");
+      mapController.addMarker(MarkerOptions(
+        draggable: false,
+        position: LatLng(sign.y, sign.x),
+      ));
+    }
+  }
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
@@ -91,18 +111,35 @@ class _MyHomePageState extends State<MyHomePage> {
                   alignment: Alignment.bottomRight,
                   child: FloatingActionButton(
                       onPressed: () {
-                        if (mapController != null) {
-                          mapController.addMarker(MarkerOptions(
-                            draggable: false,
-                            position: _center,
-                            infoWindowText:
-                                InfoWindowText('My Location', "marker"),
-                          ));
-                        }
+                        mapController.clearMarkers();
+                        mapController.addMarker(MarkerOptions(
+                          draggable: false,
+                          position: _center,
+                          // icon: BitmapDescriptor.fromAsset('images/circle.png',),
+                        ));
+                        mapController.animateCamera(
+                            CameraUpdate.newCameraPosition(
+                                CameraPosition(target: _center, zoom: 18.0)));
                       },
                       materialTapTargetSize: MaterialTapTargetSize.padded,
                       backgroundColor: Colors.blue,
                       child: const Icon(Icons.my_location, size: 36.0)),
+                )),
+            Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: FloatingActionButton(
+                      onPressed: () {
+                        getAllSigns();
+
+                        mapController.animateCamera(
+                            CameraUpdate.newCameraPosition(
+                                CameraPosition(target: _center, zoom: 18.0)));
+                      },
+                      materialTapTargetSize: MaterialTapTargetSize.padded,
+                      backgroundColor: Colors.blue,
+                      child: const Icon(Icons.send, size: 36.0)),
                 ))
           ],
         ));
@@ -180,7 +217,6 @@ class DataSearch extends SearchDelegate<String> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-
     alert = null;
 
     final Iterable<String> suggestions = <String>[];
