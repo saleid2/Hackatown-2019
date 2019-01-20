@@ -17,14 +17,18 @@ class ParkingDateManager{
   DescriptionFilter _descriptionFilter = new DescriptionFilter();
 
   bool _isParkingAvailable = true;
-
+  DateTime _selectedDateTime = DateTime.now();
   ParkingDateManager(){}
 
   bool verifyDate(String description){
     init();
-    findDate(DateTime.now(), description);
+    findDate(_selectedDateTime, description);
     print("illegal parking: " + _isParkingAvailable.toString());
     return _isParkingAvailable;
+  }
+
+  void selectedDateTimeSetter(DateTime time){
+    _selectedDateTime = time;
   }
 
   void findDate(DateTime time, String description){

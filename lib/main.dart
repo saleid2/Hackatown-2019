@@ -4,10 +4,12 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:polseinzer/database/db_helper.dart';
 import 'package:polseinzer/database/model/sign.dart';
 import 'package:polseinzer/description.filter/ParkingDateManager.dart';
+import 'package:flutter_calendar/flutter_calendar.dart';
 
 void main() {
   runApp(new MyApp());
-}
+} 
+ParkingDateManager parkingDateManager = new ParkingDateManager();
 
 class MyApp extends StatelessWidget {
   @override
@@ -29,7 +31,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   GoogleMapController mapController;
   DatabaseHelper databaseHelper = new DatabaseHelper();
-  ParkingDateManager parkingDateManager = new ParkingDateManager();
+
 
   bool isIllegalParking = false;
 
@@ -60,13 +62,14 @@ class _MyHomePageState extends State<MyHomePage> {
       isIllegalParking = parkingDateManager.verifyDate(sign.desc);
       print("sign added1");
       print("is illegal: " + isIllegalParking.toString());
-      if(isIllegalParking)
+
       mapController.addMarker(MarkerOptions(
         draggable: false,
         position: LatLng(sign.y, sign.x),
-        icon: BitmapDescriptor.defaultMarkerWithHue(isIllegalParking ? BitmapDescriptor.hueRed : BitmapDescriptor.hueGreen),
+        icon: BitmapDescriptor.defaultMarkerWithHue(isIllegalParking
+            ? BitmapDescriptor.hueRed
+            : BitmapDescriptor.hueGreen),
         infoWindowText: InfoWindowText("Info", sign.desc),
-
       ));
     }
   }
@@ -82,48 +85,58 @@ class _MyHomePageState extends State<MyHomePage> {
             child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
-            DrawerHeader(
-              child: Text('Main menu'),
-              decoration: BoxDecoration(
-                color: Colors.blue,
+            new UserAccountsDrawerHeader(
+              accountName: new Text("Developper Team"),
+              accountEmail: new Text("devTeam@polymtl.ca"),
+              currentAccountPicture: new CircleAvatar(
+                backgroundColor: Colors.white,
+                child: new Text("PL"),
               ),
             ),
             Container(
-              // This align moves the children to the bottom
+                // This align moves the children to the bottom
                 child: Align(
                     alignment: FractionalOffset.bottomCenter,
                     // This container holds all the children that will be aligned
                     // on the bottom and should not scroll with the above ListView
                     child: Container(
                         child: Column(
-                          children: <Widget>[
-                            Divider(),
-                            ListTile(leading: Icon(Icons.calendar_today),
-                                title: Text('Calendar'),
-                                onTap: () {
-                                  print("testing button");
-                                }),
-                            ListTile(leading: Icon(Icons.insert_emoticon),
-                                title: Text('NSFW'),
-                                onTap: () {
-                                  print("testing button");
-                                }),
-                            ListTile(leading: Icon(Icons.settings),
-                                title: Text('Setting'),
-                                onTap: () {
-                                  print("testing button");
-                                }),
-                            ListTile(leading: Icon(Icons.help),
-                                title: Text('Help'),
-                                onTap: () {
-                                  print("testing button");
-                                }),
-                          ],
-                        )
-                    )
-                )
-            )
-
+                      children: <Widget>[
+                        Divider(),
+                        ListTile(
+                            leading: Icon(Icons.calendar_today),
+                            title: Text('Calendar'),
+                            onTap: () {
+                              Navigator.pop(context);
+                              print("testing button");
+                              Navigator.push(
+                                  context,
+                                  new MaterialPageRoute(
+                                      builder: (context) => new CalendarView()));
+                            }),
+                        ListTile(
+                            leading: Icon(Icons.insert_emoticon),
+                            title: Text('NSFW'),
+                            onTap: () {
+                              Navigator.pop(context);
+                              print("testing button");
+                            }),
+                        ListTile(
+                            leading: Icon(Icons.settings),
+                            title: Text('Setting'),
+                            onTap: () {
+                              Navigator.pop(context);
+                              print("testing button");
+                            }),
+                        ListTile(
+                            leading: Icon(Icons.help),
+                            title: Text('Help'),
+                            onTap: () {
+                              Navigator.pop(context);
+                              print("testing button");
+                            }),
+                      ],
+                    ))))
           ],
         )),
         appBar: new AppBar(
@@ -299,6 +312,49 @@ class _SuggestionList extends StatelessWidget {
           },
         );
       },
+    );
+  }
+}
+
+class CalendarView  extends StatelessWidget {
+  void handleNewDate(date) {
+    print("handleNewDate ${date}");
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return new MaterialApp(
+      title: 'Flutter Demo',
+      theme: new ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: new Scaffold(
+        appBar: new AppBar(
+          title: new Text('Calendar'),
+        ),
+        body: new Container(
+          margin: new EdgeInsets.symmetric(
+            horizontal: 5.0,
+            vertical: 10.0,
+          ),
+          child: new ListView(
+            shrinkWrap: true,
+            children: <Widget>[
+              new Text('The Parking Calendar:'),
+              new Calendar(
+                onDateSelected: (range) =>
+                parkingDateManager.selectedDateTimeSetter(range),
+                onSelectedRangeChange: (range) =>
+                    print("Range is ${range.item1}, ${range.item2}"),
+                isExpandable: true,
+              ),
+              new Divider(
+                height: 50.0,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
