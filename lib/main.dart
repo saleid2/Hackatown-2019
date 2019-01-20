@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geocoder/geocoder.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:polseinzer/database/db_helper.dart';
 import 'package:polseinzer/database/model/sign.dart';
@@ -28,10 +29,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
   GoogleMapController mapController;
   DatabaseHelper databaseHelper = new DatabaseHelper();
+  final DataSearch _delegate = DataSearch();
+
+  String _lastStringSelected;
+
+  var isLoading = true;
 
   List<Sign> signs;
-  final LatLng _center = const LatLng(45.48881898, -73.58350448);
-  final LatLng _center1 = const LatLng(49.48881898, -71.58350448);
+   LatLng _center = const LatLng(45.48881898, -73.58350448);
+   LatLng _center1 = const LatLng(49.48881898, -71.58350448);
 
   void getAllSigns() async{
     signs = await databaseHelper.getZone(-73.58350448, 45.48881898 , 1000);
@@ -42,6 +48,7 @@ class _MyHomePageState extends State<MyHomePage> {
       mapController.addMarker(MarkerOptions(
         draggable: false,
         position: LatLng(sign.y, sign.x),
+
 
       ));
 
@@ -72,8 +79,22 @@ class _MyHomePageState extends State<MyHomePage> {
           actions: <Widget>[
             new IconButton(
                 icon: new Icon(Icons.search),
-                onPressed: () {
-                  print("Search button pressed1");
+
+                onPressed: () async {
+                  print("Search button pressed");
+                  final String selected = await showSearch<String>(
+                      context: context, delegate: _delegate);
+                  if (selected != null && selected != _lastStringSelected) {
+                    setState(() {
+                      _lastStringSelected =
+                          selected.replaceAll(r'[^\d\.-,]+', '');
+                      var latlng = _lastStringSelected.split(',');
+                      _center = new LatLng(
+                          double.parse(latlng[0].substring(1)),
+                          double.parse(
+                              latlng[1].substring(0, latlng[1].length - 1)));
+                    });
+                  }
 
                 }),
           ],
@@ -94,6 +115,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 padding: const EdgeInsets.all(16.0),
                 child: Align(
                   alignment: Alignment.bottomRight,
+
                   child: FloatingActionButton(onPressed: (){
                     mapController.clearMarkers();
                     mapController.addMarker(MarkerOptions(
@@ -136,10 +158,15 @@ class _MyHomePageState extends State<MyHomePage> {
 //        ),
 //      ),
     );
+
+
   }
 }
 
 class DataSearch extends SearchDelegate<String> {
+  final List<Address> _data = <Address>[];
+  AlertDialog alert;
+
   @override
   List<Widget> buildActions(BuildContext context) {
     // TODO: implement buildActions
@@ -161,13 +188,102 @@ class DataSearch extends SearchDelegate<String> {
 
   @override
   Widget buildResults(BuildContext context) {
-    // TODO: implement buildResults
-    return null;
+    Geocoder.google("AIzaSyBSNLUYYbxq3A24F9p9QD5A7wI5bcVUlXE")
+        .findAddressesFromQuery(query)
+        .then((addressResponse) {
+      if (alert == null) {
+        alert = AlertDialog(
+          title: Text('${addressResponse[0].addressLine}'),
+          actions: <Widget>[
+            FlatButton(
+                child: Text('Yes'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  close(context, addressResponse[0].coordinates.toString());
+                }),
+            FlatButton(
+                child: Text('No'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                })
+          ],
+        );
+        showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return alert;
+            });
+      }
+    });
+
+    var lv = ListView.builder(
+        itemCount: _data.length,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text('${_data[index].addressLine}'),
+            onTap: () {
+              print(_data[index].coordinates.toString());
+              close(context, _data[index].coordinates.toString());
+            },
+          );
+        });
+
+    return lv.build(context);
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    // TODO: implement buildSuggestions
-    return null;
+
+    alert = null;
+
+    final Iterable<String> suggestions = <String>[];
+
+    return _SuggestionList(
+      query: query,
+      suggestions: suggestions.toList(),
+      onSelected: (String suggestion) {
+        query = suggestion;
+        showResults(context);
+      },
+    );
+  }
+}
+
+class _SuggestionList extends StatelessWidget {
+  const _SuggestionList({this.suggestions, this.query, this.onSelected});
+
+  final List<String> suggestions;
+  final String query;
+  final ValueChanged<String> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    return ListView.builder(
+      itemCount: suggestions.length,
+      itemBuilder: (BuildContext context, int i) {
+        final String suggestion = suggestions[i];
+        return ListTile(
+          leading: query.isEmpty ? const Icon(Icons.history) : const Icon(null),
+          title: RichText(
+            text: TextSpan(
+              text: suggestion.substring(0, query.length),
+              style:
+                  theme.textTheme.subhead.copyWith(fontWeight: FontWeight.bold),
+              children: <TextSpan>[
+                TextSpan(
+                  text: suggestion.substring(query.length),
+                  style: theme.textTheme.subhead,
+                ),
+              ],
+            ),
+          ),
+          onTap: () {
+            onSelected(suggestion);
+          },
+        );
+      },
+    );
   }
 }
