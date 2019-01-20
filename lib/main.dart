@@ -107,8 +107,8 @@ class _MyHomePageState extends State<MyHomePage> {
               accountName: new Text("Developper Team"),
               accountEmail: new Text("devTeam@polymtl.ca"),
               currentAccountPicture: new CircleAvatar(
-                backgroundColor: Colors.white,
-                child: new Text("PL"),
+                backgroundImage: NetworkImage('https://picsum.photos/200/300/?random')
+               // child: new Text("PL"),
               ),
             ),
             Container(
@@ -366,9 +366,14 @@ class CalendarView  extends StatelessWidget {
                     print("Range is ${range.item1}, ${range.item2}"),
                 isExpandable: true,
               ),
-              new Divider(
-                height: 50.0,
+              new FlatButton(
+                child: Text('Check parking at this date', style: TextStyle(color: Colors.white)),
+                color: Colors.blue,
+                onPressed: () {
+                  Navigator.pop(context);
+                },
               ),
+
             ],
           ),
         ),
