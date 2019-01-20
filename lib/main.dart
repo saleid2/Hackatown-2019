@@ -3,6 +3,7 @@ import 'package:geocoder/geocoder.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:polseinzer/database/db_helper.dart';
 import 'package:polseinzer/database/model/sign.dart';
+import 'package:polseinzer/description.filter/ParkingDateManager.dart';
 
 void main() {
   runApp(new MyApp());
@@ -28,6 +29,9 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   GoogleMapController mapController;
   DatabaseHelper databaseHelper = new DatabaseHelper();
+  ParkingDateManager parkingDateManager = new ParkingDateManager();
+
+  bool isIllegalParking = false;
 
   List<Sign> signs;
   final LatLng _center = const LatLng(45.4957515, -73.5811633);
@@ -43,6 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
     mapController.addMarker(MarkerOptions(
       draggable: false,
       position: center,
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
       // icon: BitmapDescriptor.fromAsset('images/circle.png',),
     ));
     mapController.animateCamera(CameraUpdate.newCameraPosition(
@@ -53,11 +58,13 @@ class _MyHomePageState extends State<MyHomePage> {
     print("sign added");
     print(signs.length);
     for (Sign sign in signs) {
+      isIllegalParking = parkingDateManager.verifyDate(sign.desc);
       print("sign added1");
       mapController.addMarker(MarkerOptions(
         draggable: false,
         position: LatLng(sign.y, sign.x),
         infoWindowText: InfoWindowText("Info", sign.desc),
+        icon: BitmapDescriptor.defaultMarkerWithHue(isIllegalParking ? BitmapDescriptor.hueRed : BitmapDescriptor.hueGreen),
       ));
     }
   }
