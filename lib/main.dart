@@ -60,6 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
     for (Sign sign in signs) {
       isIllegalParking = parkingDateManager.verifyDate(sign.desc);
       print("sign added1");
+      print("is illegal: " + isIllegalParking.toString());
       mapController.addMarker(MarkerOptions(
         draggable: false,
         position: LatLng(sign.y, sign.x),
