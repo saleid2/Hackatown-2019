@@ -16,7 +16,7 @@ class ParkingDateManager{
   Map _listOfDays = new Map();
   DescriptionFilter _descriptionFilter = new DescriptionFilter();
 
-  bool _isParkingAvailable = false;
+  bool _isParkingAvailable = true;
 
   ParkingDateManager(){}
 
@@ -32,34 +32,43 @@ class ParkingDateManager{
     String hourNow = time.hour.toString() + time.minute.toString();
     String dayOfWeekNow = time.weekday.toString();
 
-    bool isParkingHourAvailable;
-    bool isParkingSameDay;
+    bool isParkingHourAvailable = true;
+    bool isParkingSameDay = true;
 
     List listHours = new List();
     List recoveredDateFiltered = _descriptionFilter.filterInput(description);
 
-
-    for(String item in recoveredDateFiltered) {
-      if ((new RegExp(r'[0-9]+')).hasMatch(item)) {
-        listHours.add(item);
+    try {
+      for (String item in recoveredDateFiltered) {
+        if ((new RegExp(r'[0-9]+')).hasMatch(item)) {
+          listHours.add(item);
+        }
       }
-    }
 
-    int indexOfFirstDay;
-    for(int i = 0; i < recoveredDateFiltered.length; i++){
-      if(_dayArray.contains(recoveredDateFiltered[i])){
-        indexOfFirstDay = i;
-        break;
+      int indexOfFirstDay;
+      for (int i = 0; i < recoveredDateFiltered.length; i++) {
+        if (_dayArray.contains(recoveredDateFiltered[i])) {
+          indexOfFirstDay = i;
+          break;
+        }
       }
-    }
 
-    isParkingHourAvailable = isBetweenHours(hourNow, listHours);
-    isParkingSameDay = isSameDate(dayOfWeekNow, indexOfFirstDay, recoveredDateFiltered);
-    print("the hour parking is available? " + isParkingHourAvailable.toString());
-    print("the day same ? " + isParkingSameDay.toString());
+      print(recoveredDateFiltered);
+      isParkingHourAvailable = isBetweenHours(hourNow, listHours);
+      if (recoveredDateFiltered.length > 1) {
+        isParkingSameDay =
+            isSameDate(dayOfWeekNow, indexOfFirstDay, recoveredDateFiltered);
+      }
+      print("the hour parking is available? " +
+          isParkingHourAvailable.toString());
+      print("the day same ? " + isParkingSameDay.toString());
 
-    if (isParkingHourAvailable && !isParkingSameDay){
-      _isParkingAvailable = true;
+      if (isParkingHourAvailable && !isParkingSameDay) {
+        _isParkingAvailable = false;
+      }
+      print("illegal parking: " + _isParkingAvailable.toString());
+    } on Exception catch(e){
+      print("Do nothing when catch exception");
     }
   }
 
@@ -99,8 +108,14 @@ class ParkingDateManager{
       }
     }
     for(int i = 0; i < beginHours.length; i++){
-      if(beginHours[i] <= convertedHourNow && endHours[i] > convertedHourNow){
-        return false;
+      if(beginHours[i] < endHours[i]) {
+        if (beginHours[i] <= convertedHourNow && endHours[i] > convertedHourNow) {
+          return false;
+        }
+      }else {
+        if (beginHours[i] > convertedHourNow && endHours[i] >= convertedHourNow) {
+          return false;
+        }
       }
     }
     return true;
@@ -111,6 +126,8 @@ class ParkingDateManager{
     for(int i = 0; i < _dayArray.length; i++){
       _listOfDays[_dayArray[i]] = i + 1;
     }
+
+    _isParkingAvailable = true;
   }
 
 }
