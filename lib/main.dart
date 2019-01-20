@@ -57,6 +57,7 @@ class _MyHomePageState extends State<MyHomePage> {
       mapController.addMarker(MarkerOptions(
         draggable: false,
         position: LatLng(sign.y, sign.x),
+        infoWindowText: InfoWindowText("Info", sign.desc),
       ));
     }
   }
