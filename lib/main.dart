@@ -158,7 +158,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         )),
         appBar: new AppBar(
-          title: new Text('Google Maps'),
+          title: new Text('Polseinzer'),
           actions: <Widget>[
             new IconButton(
                 icon: new Icon(Icons.search),
