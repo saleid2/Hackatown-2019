@@ -1,6 +1,6 @@
 # polseinzer
 
-A new Flutter application.
+A Flutter app to help you find parking
 
 ## Inspiration
 Street signage keeps changing, and it's hard to keep track. We couldn't find any tools to provide us with accurate information about parking restrictions around Montreal, so we decided to build one.
